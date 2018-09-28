@@ -41,7 +41,8 @@ int getFileString(const char* fileName, char* &fileStringOut) {
     return 0;  // All good!
 }
 
-char *multi_tok(char *input, const char *delimiter) {
+// Thanks internet.
+char* multi_tok(char* input, const char* delimiter) {
     static char *string;
     if (input != NULL)
         string = input;
@@ -62,6 +63,21 @@ char *multi_tok(char *input, const char *delimiter) {
     string = end + strlen(delimiter);
     return temp;
 }
+
+// This function inserts to into from and puts them.
+// The string must be freed after use. "free(str)"
+char* insertString(char* to, char* from, int position) {
+    char* outString = (char*)malloc( (strlen(to)+strlen(from)+1)*sizeof(char) );
+
+    strncpy(outString, to, position);
+    outString[position] = '\0';
+    strcat(outString, from);
+    strcat(outString, to + position);
+    printf("%s\n", outString);  // Print outString.
+
+    return outString;
+}
+
 /// When accessing sub-titles, include the dot operator in the string.
 /// ex. nameArray = "title.subTitle"
 //ItemContents_t ReadItem(char* nameString, int rowIndex, int itemIndex) {
@@ -195,12 +211,15 @@ int FormatConfig(char* formatString) {
     return 0;  // This means good.
 }
 
-/// Returns 1 if failed, 0 if pass, -1 if title not found.
+/// Returns char or NULL if failed.
 /// fileString is the string to modify.  Title is the header to add a row to.  ("title.subtitle") can only ever be 1 '.'
 /// rowInitString is the string that is written in the row (remember to include \003 and \004 for item separation).
-int ConfigAddRow(char* fileString, char* keyString, char* rowInitString) {
+char* ConfigAddRow(char* fileString, char* keyString, char* rowInitString) {
     printf("\t#### In - %s : %s\n", keyString, rowInitString);
 
+    int insertPosition = 0;  // Where to insert the row init string.
+
+    char cleanFileString[strlen(fileString)+1];  // Create filestring "clean" copy.  Almost the output string.
     char tmpFileString[strlen(fileString)+1];  // Create filestring copy.
 
     char* title = NULL;  // This is the key.
@@ -209,6 +228,7 @@ int ConfigAddRow(char* fileString, char* keyString, char* rowInitString) {
     char* ptrStr;
     ptrStr = strtok(keyString, ".");
 
+    // Find title and subtitle.
     int index = 0;
     while (ptrStr != NULL) {
         if(index == 0) {
@@ -219,75 +239,64 @@ int ConfigAddRow(char* fileString, char* keyString, char* rowInitString) {
             strcpy(subtitle, ptrStr);  // assign string value.
         } else {
             printf("!!! - TitleError\n");
-            return 1;  // error with title.
+            return NULL;  // error with title.
         }
         ptrStr = strtok (NULL, ".");  // Go to next item.
         index++;
     }
-    printf("\t\ttitle: %s subtitle: %s \n", title, subtitle);
 
-    // Look for title string.
-    const char* delim1 = "\001\002";
-    const char* delim2 = "\001";
+    // Look for the title string.
     while (true) {
         strcpy(tmpFileString, fileString);
-        ptrStr = strtok(tmpFileString, delim1);
-        //ptrStr = strtok (NULL, delim1);  // Remove leading \001.
+        ptrStr = strtok(tmpFileString, "\001\002");
         printf("\tReading: |%s| v.s |%s|\n", ptrStr, title);
-        //printf("\t output: %i", strcmp(ptrStr, title));
-        // Read title name.
-        //ptrStr = strtok (NULL, delim1);  // Go to next item.
 
         if (strcmp(ptrStr, title) == 0) {  // Break loop if title name is correct.
-            printf("Correct title\n");
-            chopN(fileString, 1);
-            goto DoneLoop;  // exit while loop.
+            printf("!!!!!!\nFound correct title.\n!!!!!!\n");
+            chopN(fileString, 1); insertPosition += 1;
+            // WARNING: this GOTO statement jumps to just after the while loop.
+            goto ExitWhile;  // Exit while loop.
         }
 
         //printf("\t\tfileString is: %s\n", fileString);
         // Remove first char from file string.
-        chopN(fileString, 1);
+        chopN(fileString, 1); insertPosition += 1;
 
-        printf("\t\tfileString is: %s\n", fileString);
+        printf("\t\tMid: fileString is: %s\n", fileString);
 
         strcpy(tmpFileString, fileString);
-        //if (fileString == "") {  //Check if this works.
-        //    return -1;  // Could not find title.
-        //}
 
-        // Search for double \001 and count amount to cutoff when found.
-        int frontCutoffLength = 0;  // Length to cutoff.
+        // Search for "\001\001" and count amount to cutoff from fileString when found.
         ptrStr = multi_tok(tmpFileString, "\001\001");
-        while(strlen(ptrStr) != 0) {
-            //printf("\t\t\tLengthAdd: %i, LengthTotal: %i, ptrString: %s\n", strlen(ptrStr) + 1, frontCutoffLength, ptrStr);
-            //frontCutoffLength += strlen(ptrStr) + 1;
+        printf("\t\tCut Section: %s\n", ptrStr);
+        if (ptrStr == NULL) { return NULL; }  // Exit Condition.
 
-            printf("\tThe day: %s\n", ptrStr);
-            ptrStr = multi_tok(NULL, "\001\001");
+        int frontCutoffLength = strlen(ptrStr) + 1;  // Length to cutoff.
 
-
-            if (ptrStr == NULL) {
-                return -1;
-            }
-        }
-
-        // Remove first char from file string.
-        chopN(fileString, frontCutoffLength);
+        chopN(fileString, frontCutoffLength); insertPosition += frontCutoffLength;
         printf("\t\tLast: fileString is: %s\n", fileString);
     }
-
-    DoneLoop:
-    printf("Title is: %s\n", title);
+    ExitWhile:
+    printf("\tTitle is: %s\n", title);
 
     // Look for subtitle.
-    //if (subtitle != NULL) {
+    if (subtitle != NULL) {
+        printf("\tLooking for subtitle\n");
+    }
 
-    //}
+    // Find the \001 after the current title and move the insert position.
+    // (to right infront of the closing \001)
+    ptrStr = multi_tok(tmpFileString, "\001");
+    insertPosition += strlen(ptrStr);
 
-    //TODO: modify fileString.
+    // Write Message to fileString.
+    char* outFileStringPtr;
+    char rowStartChar[] = "\002";
+    outFileStringPtr = insertString(cleanFileString, rowStartChar + rowInitString, insertPosition);
 
-    // dealocate pointers.
+    // Dealocate pointers.
     free(title);
     free(subtitle);
-    return 0;
+
+    return outFileStringPtr;
 }

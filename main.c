@@ -1,5 +1,5 @@
 // Build Commands:
-//cd Desktop\cDev\learnprog
+//cd C:/Github/C-AutoCompile
 //windres resc.rc resc.o
 //g++ main.c main.h dialog.h dialog.c layout.h layout.c resource.h resc.o -o main.exe -lgdi32
 //g++ main.c main.h dialog.h dialog.c layout.h layout.c ptconfig.h ptconfig.c resource.h resc.o -o main.exe -lgdi32
@@ -162,17 +162,19 @@ void InitProgram(void) {
         printf("ERROR with file Initialization.\n");
     } else {
         printf("Out - File Contents: %s\n", fileString);  //DEBUG: this.
+
         char key[] = "title2.subtitle2";
         char value[] = "\003hey1\003hello2";
-        ConfigAddRow(fileString, key, value);
-        printf("Out - File Contents2: %s\n", fileString);  //DEBUG: this.
+        fileString = ConfigAddRow(fileString, key, value);  // Add a row to the config string.
+
+        printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
 
         fptr = fopen(g_configFileName, "w");
         fprintf(fptr, fileString);
         fclose(fptr);  // Close file.
     }
 
-    free(fileString);  // dealocate fileString.
+    free(fileString);  // Dealocate fileString.
 
 
 

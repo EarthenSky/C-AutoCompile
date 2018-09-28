@@ -26,6 +26,6 @@
     //ItemContents ReadItem(char*, int, int);
 
     int FormatConfig(char*);
-    int ConfigAddRow(char*, char*, char*);
+    char* ConfigAddRow(char*, char*, char*);
 
 #endif  //PTCONFIG
