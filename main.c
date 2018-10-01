@@ -161,22 +161,28 @@ void InitProgram(void) {
     if ( getFileString(g_configFileName, fileString) == 1 ) {
         printf("ERROR with file Initialization.\n");
     } else {
-        printf("Out - File Contents: %s\n", fileString);  //DEBUG: this.
-
+        // Create rows.
         char key[] = "title2.subtitle2";
-        char value[] = "\003hey1\003hello2";
+        char value[] = "\002\003hey1\003hello2";  // Remember the \002.
         fileString = ConfigAddRow(fileString, key, value);  // Add a row to the config string.
+
+        char value2[] = "\002\003next_row\003hey2\003hello3";  // Remember the \002.
+        fileString = ConfigAddRow(fileString, key, value2);  // Add a row to the config string.
+
+        char key2[] = "numbers";
+        char value3[] = "\002\0041\004245\00477463";  // Remember the \002.
+        fileString = ConfigAddRow(fileString, key2, value3);  // Add a row to the config string.
 
         printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
 
+        printf("Writing File.\n");
         fptr = fopen(g_configFileName, "w");
         fprintf(fptr, fileString);
         fclose(fptr);  // Close file.
+        printf("Finished Writing File.\n");
     }
 
     free(fileString);  // Dealocate fileString.
-
-
 
     //TODO: read the data file and fill the listbox with the existing projects.
 
