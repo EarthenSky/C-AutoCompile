@@ -173,6 +173,10 @@ void InitProgram(void) {
         char value3[] = "\002\0041\004245\00477463";  // Remember the \002.
         fileString = ConfigAddRow(fileString, key2, value3);  // Add a row to the config string.
 
+        // TODO: Fix reading rows higher than 1.
+        ItemContents_t results = ReadItem(fileString, key, 1, -1);  // Read entire row to.
+        DealocateItemContents(results);  // Dealocate array.
+
         printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
 
         printf("Writing File.\n");
