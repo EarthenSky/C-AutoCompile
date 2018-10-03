@@ -170,18 +170,19 @@ void InitProgram(void) {
         fileString = ConfigAddRow(fileString, key, value2);  // Add a row to the config string.
 
         char key2[] = "numbers";
-        char value3[] = "\002\0041\004245\00477463";  // Remember the \002.
+        char value3[] = "\002\0031\003245\00377463";  // Remember the \002.
         fileString = ConfigAddRow(fileString, key2, value3);  // Add a row to the config string.
 
-        // TODO: Fix reading rows higher than 1.
-        ItemContents_t results = ReadItem(fileString, key, 1, -1);  // Read entire row to.
+        ItemContents_t results = ReadItem(fileString, key, 1, 2);  // Read item 1 to results
+        printf("Out - Results: %c\n", results.contentIdentifier);  //DEBUG: this.
+        printf("Out - Results: %s\n", results.itemString);  //DEBUG: this.
         DealocateItemContents(results);  // Dealocate array.
 
         printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
 
         printf("Writing File.\n");
-        fptr = fopen(g_configFileName, "w");
-        fprintf(fptr, fileString);
+        fptr = fopen(g_configFileName, "w");  // Open file for writing.
+        fprintf(fptr, fileString);  // Write file.
         fclose(fptr);  // Close file.
         printf("Finished Writing File.\n");
     }

@@ -3,6 +3,10 @@
 /// Titles cannot contain '\001', '\002', '\003', '\004', '.', or '; in .ptconfig files.
 /// Row items cannot contain '\001', '\002', '\003', or '\004' in .ptconfig files.
 
+/// EDIT: I'm no longer doing the \004 and \003 thing, they are both just \003 now, types can do what they want.
+
+/// NOTE: To any future programmers, don't copy this, redo the entire thing. 100%.
+
 // This is a string function to cutr from front.
 #include <assert.h>
 void chopN(char *str, size_t n) {
@@ -75,10 +79,22 @@ char* insertString(char* to, char* from, int position) {
     return outString;
 }
 
+// Remove given section from string. Negative len means remove
+// everything up to the end.
+int str_cut(char *str, int begin, int len) {
+    int l = strlen(str);
+
+    if (len < 0) len = l - begin;
+    if (begin + len > l) len = l - begin;
+    memmove(str + begin, str + begin + len, l - len + 1);
+
+    return len;
+}
+
 /// When accessing sub-titles, include the dot operator in the string.
 /// ex. keyString = "title.subtitle" or "title".
 /// This function returns the value of an array at a specific table.
-/// If itemIndex = -1 then ItemContents (return value) == array of entire row (raw data (includes the string header value.)).
+/// If itemIndex = -1 then ItemContents (return value) == array of entire row (string data (doesn't the string header value.)  Type is lost.)
 ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int itemIndex) {
     ItemContents_t results;
 
@@ -141,7 +157,6 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         chopN(fileString, frontCutoffLength); //insertPosition += frontCutoffLength;
     }
     ExitTitleWhile:
-    printf("\tFound title.\n");
 
     // Look for subtitle string.
     if (subtitle != NULL) {
@@ -184,11 +199,11 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
             goto ExitRowWhile;
         }
         index++;
-        ptrStr = strtok (NULL, "\002");  // Go to next item.
+        ptrStr = strtok (NULL, "\002\001");  // Go to next item.
     }
     ExitRowWhile:
 
-    char rowContents[strlen(ptrStr)];
+    char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
     printf("rowContents: %s\n", ptrStr);
 
@@ -196,40 +211,127 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
     if(itemIndex == -1) {
         results.contentIdentifier = 'a';
 
+        // Array bounds.
+        int numItems = 0;
+        int itemSize = 0;
+
         // Find size of rowContents.
+        for (int i=0; i <= strlen(rowContents); i++) {
+            if (rowContents[i] == '\003' || rowContents[i] == '\004') {
+                numItems++;
+            }
+        }
 
-        int numItems = 30; int itemSize = 150;  // the size of the array.
+        // Calculate the largest string size.
+        int maxStringSize = 0;  // Largest sub-string.
+        {
+            int leftLength = 0;
+            int rightLength = 0;
+            char* tmpStr = ptrStr;
+            while(tmpStr = strstr(tmpStr, "\003")) {  // Find how many sub strings there will be.
+                tmpStr++;
 
-        // Alocate a multidemensional array.
+                int currentStringSize = (strlen(ptrStr) - strlen(tmpStr)) - leftLength - 1;
+                if( currentStringSize > maxStringSize ) {
+                    maxStringSize = currentStringSize;
+                }
+
+                leftLength = strlen(ptrStr) - strlen(tmpStr);
+                rightLength = strlen(tmpStr);
+            }
+
+            // Remember to check the last string.
+            if( rightLength > maxStringSize ) {
+                maxStringSize = rightLength;
+            }
+        }
+        itemSize = maxStringSize;  // The size of the arrayitems.
+
+        // Alocate a multidemensional array and assign values to it.
         results.rowArray = (char**)malloc(numItems*sizeof(char*));
         for(int i=0; i<numItems; i++) {
             results.rowArray[i] = (char*)malloc(itemSize*sizeof(char));
         }
+
+        printf("\t\tArray Size: %i\n", numItems);
+        strcpy(ptrStr, rowContents);  //TODO: remove this line.
+        index = 0;
+
+        // Holds the string to modify.
+        char rowContentsCpy[strlen(rowContents)+1];
+        strcpy(rowContentsCpy, rowContents);
+        while(true) {  // Assign values to the array.
+            char rowContentsTmp[strlen(rowContents)+1];
+            strcpy(rowContentsTmp, rowContentsCpy);
+
+            char* tmpStr = strtok(rowContentsTmp, "\003");
+            if (tmpStr == NULL) {
+                return results;
+            }
+
+            chopN(rowContentsCpy, strlen(tmpStr)+1);
+
+            printf("\t\ttmpStr: %s, %i\n", tmpStr, index);
+            strcpy(results.rowArray[index], tmpStr);
+
+            printf("\t\tresults.rowArray[index]: %s\n", results.rowArray[index]);
+            if (index > 0) {
+                printf("\t\tresults.rowArray[index] - v2: %s\n", results.rowArray[index-1]);
+            }
+
+            index++;
+        }
     }
     else {
-        // Find the needed item in rowContents and find type.
-    }
+        results.contentIdentifier = 's';
+        char rowContentsTmp[strlen(rowContents)+1];
+        strcpy(rowContentsTmp, rowContents);
 
-    return results;
+        // Find the needed item in rowContents and find type.
+        index = 0;
+        char* tmpStr = strtok(rowContentsTmp, "\003");
+        if(index == itemIndex) {
+            results.itemString = (char*)malloc((strlen(tmpStr)*sizeof(char))+1);
+            strcpy(results.itemString, tmpStr);
+            return results;
+        }
+        index++;
+        while(tmpStr = strtok(NULL, "\003")) {
+            printf("\tstring: %s\n", tmpStr);
+            if(index == itemIndex) {
+                results.itemString = (char*)malloc((strlen(tmpStr)*sizeof(char))+1);
+                strcpy(results.itemString, tmpStr);
+                return results;
+            }
+            index++;
+        }
+    }
+    printf("Oh no, things are not looking good for you. \nCode should not get here, unless there is an error.\n");
+    return results;  //
 }
 
 // Use this function to dealocate items that have been read.  (only dealocates the array and string.)
 void DealocateItemContents(ItemContents_t itemContents) {
-    int numItems = sizeof(itemContents.rowArray) / sizeof(itemContents.rowArray[0]);
-
-    for(int i=0; i<numItems; i++) {
-        free(itemContents.rowArray[i]);
+    if (itemContents.contentIdentifier == 'a') {
+        int numItems = sizeof(itemContents.rowArray) / sizeof(itemContents.rowArray[0]);
+        //int itemSize = sizeof(itemContents.rowArray[0]) - 1;
+        //printf("\titemSize: %i\n", itemSize);
+        printf("\tnumItems: %i\n", numItems);
+        for(int i=0; i<numItems; i++) {
+            free(itemContents.rowArray[i]);
+        }
+        free(itemContents.rowArray);
+    } else if (itemContents.contentIdentifier == 's') {
+        // Deallocate string
+        free(itemContents.itemString);
+    } else {
+        printf("God speed, exceution should not get here.\n");
     }
-    free(itemContents.rowArray);
-
-    // Deallocate string
-    free(itemContents.itemString);
 }
 
 // -------------------------------------------------------------------------- //
 
 //TODO: Overwrite row data (with an array of strings).
-//TODO: Read row / item data.
 
 /// Returns 1 if failed, 0 if pass.
 /// This function formats the config file and adds all needed titles and sub-titles.

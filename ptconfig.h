@@ -6,13 +6,11 @@
     #include <string.h>
 
     typedef struct ItemContents {
-        char contentIdentifier;  // 's' == string, 'n' == number, 'a' == array.
-        int num;
+        char contentIdentifier;  // 's' == string, 'a' == array.
         char* itemString;
-        char** rowArray;  // This is an array containing the values of each item (as raw strings [includes the type identifier].)
+        char** rowArray;  // This is an array containing the values of each item.
         //char stringArray[arrayLength][maxStringSize+1];
     } ItemContents_t;
-    //ItemContents_Default = {false, -1, '\000'};
 
     const char g_configFileName[] = ".ptconfig";  // The filename of the program's data file.
 
