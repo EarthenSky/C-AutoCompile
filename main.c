@@ -174,9 +174,13 @@ void InitProgram(void) {
         fileString = ConfigAddRow(fileString, key2, value3);  // Add a row to the config string.
 
         ItemContents_t results = ReadItem(fileString, key, 1, 2);  // Read item 1 to results
-        printf("Out - Results: %c\n", results.contentIdentifier);  //DEBUG: this.
-        printf("Out - Results: %s\n", results.itemString);  //DEBUG: this.
+        //printf("Out - Results: %c\n", results.contentIdentifier);  //DEBUG: this.
+        //printf("Out - Results: %s\n", results.itemString);  //DEBUG: this.
         DealocateItemContents(results);  // Dealocate array.
+        printf("Out - File Contents Before: %s\n", fileString);  //DEBUG: this.
+
+        char value4[] = "\002\003OHMYGODANEWROW!\003hey3\003hello4";
+        fileString = WriteRow(fileString, key, 1, value4);
 
         printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
 

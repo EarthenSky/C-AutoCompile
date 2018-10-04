@@ -3,6 +3,8 @@
 /// Titles cannot contain '\001', '\002', '\003', '\004', '.', or '; in .ptconfig files.
 /// Row items cannot contain '\001', '\002', '\003', or '\004' in .ptconfig files.
 
+// WARNING: Almost no error check is in this code.
+
 /// EDIT: I'm no longer doing the \004 and \003 thing, they are both just \003 now, types can do what they want.
 
 /// NOTE: To any future programmers, don't copy this, redo the entire thing. 100%.
@@ -183,9 +185,8 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
 
             chopN(fileString, frontCutoffLength); //insertPosition += frontCutoffLength;
         }
-        ExitSubtitleWhile:
-        printf("\tFound subtitle.\n");
     }
+    ExitSubtitleWhile:
 
     // Find entire row contents:
     strcpy(tmpFileString, fileString);
@@ -284,6 +285,8 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
     }
     else {
         results.contentIdentifier = 's';
+
+        // Create a copy of rowContents so it is not modified.  ... for some reason.
         char rowContentsTmp[strlen(rowContents)+1];
         strcpy(rowContentsTmp, rowContents);
 
@@ -306,8 +309,147 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
             index++;
         }
     }
-    printf("Oh no, things are not looking good for you. \nCode should not get here, unless there is an error.\n");
+    printf("Oh no, things are not looking good for you. \nExecution should not reach here, unless there is a weird error.\n");
     return results;  //
+}
+
+/// This function removes the selected row and inserts rowString in it's place.
+/// rowString is a string that contains the entire row.
+char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowString) {
+    // Create filestring copy, so that fileStringIn isn't modifed.
+    char fileString[strlen(fileStringIn)+1];
+    strcpy(fileString, fileStringIn);
+
+    int insertPosition = 0;  // Where to insert the row init string.
+    int removeLength = 0;  // How much string to cut off.
+
+    char cleanFileString[strlen(fileString)+1];  // Create filestring "clean" copy. An unchanged version of the input file string.
+    strcpy(cleanFileString, fileString);
+
+    char tmpFileString[strlen(fileString)+1];  // Create filestring copy.
+
+    char keyStringCopy[strlen(keyString)+1];  // A copy of keystring, so keystring isn't modified.
+    strcpy(keyStringCopy, keyString);
+
+    char* title = NULL;  // This is the key.
+    char* subtitle = NULL;  // This is also the key. \000 is null?
+
+    char* ptrStr;
+    ptrStr = strtok(keyStringCopy, ".");
+
+    // Find title and subtitle.
+    int index = 0;
+    while (ptrStr != NULL) {
+        if(index == 0) {
+            title = (char*)malloc((strlen(ptrStr)+1)*sizeof(char));
+            strcpy(title, ptrStr);  // assign string value.
+        } else if (index == 1) {
+            subtitle = (char*)malloc((strlen(ptrStr)+1)*sizeof(char));
+            strcpy(subtitle, ptrStr);  // assign string value.
+        } else {
+            printf("!!! - TitleError\n");
+            return NULL;  // error with title.
+        }
+        ptrStr = strtok (NULL, ".");  // Go to next item.
+        index++;
+    }
+
+    // Look for the title string.
+    while (true) {
+        strcpy(tmpFileString, fileString);
+        ptrStr = strtok(tmpFileString, "\001\002");
+
+        // Remove first char from file string.
+        chopN(fileString, 1); insertPosition += 1;
+
+        if (strcmp(ptrStr, title) == 0) {  // Case: found correct title name.
+            chopN(fileString, strlen(title)); insertPosition += strlen(title);
+            // WARNING: this GOTO statement jumps to just after the while loop.
+            goto ExitTitleWhile;  // Exit while loop.
+        }
+
+        strcpy(tmpFileString, fileString);
+
+        // Search for "\001\001" and count amount to cutoff from fileString when found.
+        ptrStr = multi_tok(tmpFileString, "\001\001");
+        if (ptrStr == NULL) { return NULL; }  // Exit Condition.
+
+        int frontCutoffLength = strlen(ptrStr) + 1;  // Length to cutoff.
+
+        chopN(fileString, frontCutoffLength); insertPosition += frontCutoffLength;
+    }
+    ExitTitleWhile:
+
+    // Look for subtitle.
+    if (subtitle != NULL) {
+        while (true) {
+            strcpy(tmpFileString, fileString);
+            ptrStr = strtok(tmpFileString, "\001\002");
+
+            // Remove first char from file string.
+            chopN(fileString, 1); insertPosition += 1;
+
+            if (strcmp(ptrStr, subtitle) == 0) {  // Break loop if title name is correct.
+                chopN(fileString, strlen(subtitle)); insertPosition += strlen(subtitle);
+                // WARNING: this GOTO statement jumps to just after the while loop.
+                goto ExitSubtitleWhile;  // Exit while loop.
+            }
+
+            strcpy(tmpFileString, fileString);
+
+            // Search for "\001" and count amount to cutoff from fileString when found.
+            ptrStr = multi_tok(tmpFileString, "\001");
+            if (ptrStr == NULL) { return NULL; }  // Exit Condition.
+
+            int frontCutoffLength = strlen(ptrStr);  // Length to cutoff.
+
+            chopN(fileString, frontCutoffLength); insertPosition += frontCutoffLength;
+        }
+
+        //printf("test\n");
+    }
+    ExitSubtitleWhile:
+
+    printf("FilsString is %s\n", fileString);
+    // Filestring has cutoff all but here -> \002\003rowstuff ...
+
+    // Find entire row contents:
+    strcpy(tmpFileString, fileString);
+    ptrStr = strtok(tmpFileString, "\002");
+
+    index = 0;
+    while (ptrStr != NULL) {
+        if (index == rowIndex) {
+            // WARNING: this GOTO statement jumps to just after the while loop.
+            goto ExitRowWhile;
+        }
+
+        insertPosition += strlen(ptrStr)+1;
+        index++;
+        ptrStr = strtok (NULL, "\002\001");  // Go to next item.
+    }
+    ExitRowWhile:
+
+    char rowContents[strlen(ptrStr)+1];
+    strcpy(rowContents, ptrStr);
+    printf("rowContents: %s\n", ptrStr);
+
+    // Remove row.  Modify the clean string (only neccisary changes for output.)
+    str_cut(cleanFileString, insertPosition, strlen(rowContents)+1);
+
+    printf("\tRemoved : %s\n", cleanFileString);
+
+    // Insert row.
+    char* outFileStringPtr;
+    outFileStringPtr = insertString(cleanFileString, rowString, insertPosition);
+
+    printf("\toutFileStringPtr : %s\n", outFileStringPtr);
+
+    // Dealocate pointers.
+    free(title);
+    free(subtitle);
+
+    return outFileStringPtr;
 }
 
 // Use this function to dealocate items that have been read.  (only dealocates the array and string.)

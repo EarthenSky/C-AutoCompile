@@ -19,6 +19,8 @@
     ItemContents_t ReadItem(char*, char*, int, int);
     void DealocateItemContents(ItemContents_t);
 
+    char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowString);  // Write to file.
+
     int FormatConfig(char*);
     char* ConfigAddRow(char*, char*, char*);
 
