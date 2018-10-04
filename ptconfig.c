@@ -206,7 +206,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
 
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
-    printf("rowContents: %s\n", ptrStr);
+    //printf("rowContents: %s\n", ptrStr);
 
     // Add needed information to type.
     if(itemIndex == -1) {
@@ -254,7 +254,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
             results.rowArray[i] = (char*)malloc(itemSize*sizeof(char));
         }
 
-        printf("\t\tArray Size: %i\n", numItems);
+        //printf("\t\tArray Size: %i\n", numItems);
         strcpy(ptrStr, rowContents);  //TODO: remove this line.
         index = 0;
 
@@ -272,13 +272,13 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
 
             chopN(rowContentsCpy, strlen(tmpStr)+1);
 
-            printf("\t\ttmpStr: %s, %i\n", tmpStr, index);
+            //printf("\t\ttmpStr: %s, %i\n", tmpStr, index);
             strcpy(results.rowArray[index], tmpStr);
 
-            printf("\t\tresults.rowArray[index]: %s\n", results.rowArray[index]);
-            if (index > 0) {
-                printf("\t\tresults.rowArray[index] - v2: %s\n", results.rowArray[index-1]);
-            }
+            //printf("\t\tresults.rowArray[index]: %s\n", results.rowArray[index]);
+            //if (index > 0) {
+                //printf("\t\tresults.rowArray[index] - v2: %s\n", results.rowArray[index-1]);
+            //}
 
             index++;
         }
@@ -300,7 +300,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         }
         index++;
         while(tmpStr = strtok(NULL, "\003")) {
-            printf("\tstring: %s\n", tmpStr);
+            //printf("\tstring: %s\n", tmpStr);
             if(index == itemIndex) {
                 results.itemString = (char*)malloc((strlen(tmpStr)*sizeof(char))+1);
                 strcpy(results.itemString, tmpStr);
@@ -432,18 +432,18 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
-    printf("rowContents: %s\n", ptrStr);
+    //printf("rowContents: %s\n", ptrStr);
 
     // Remove row.  Modify the clean string (only neccisary changes for output.)
     str_cut(cleanFileString, insertPosition, strlen(rowContents)+1);
 
-    printf("\tRemoved : %s\n", cleanFileString);
+    //printf("\tRemoved : %s\n", cleanFileString);
 
     // Insert row.
     char* outFileStringPtr;
     outFileStringPtr = insertString(cleanFileString, rowString, insertPosition);
 
-    printf("\toutFileStringPtr : %s\n", outFileStringPtr);
+    //printf("\toutFileStringPtr : %s\n", outFileStringPtr);
 
     // Dealocate pointers.
     free(title);
@@ -458,7 +458,7 @@ void DealocateItemContents(ItemContents_t itemContents) {
         int numItems = sizeof(itemContents.rowArray) / sizeof(itemContents.rowArray[0]);
         //int itemSize = sizeof(itemContents.rowArray[0]) - 1;
         //printf("\titemSize: %i\n", itemSize);
-        printf("\tnumItems: %i\n", numItems);
+        //printf("\tnumItems: %i\n", numItems);
         for(int i=0; i<numItems; i++) {
             free(itemContents.rowArray[i]);
         }
@@ -471,9 +471,6 @@ void DealocateItemContents(ItemContents_t itemContents) {
     }
 }
 
-// -------------------------------------------------------------------------- //
-
-//TODO: Overwrite row data (with an array of strings).
 
 /// Returns 1 if failed, 0 if pass.
 /// This function formats the config file and adds all needed titles and sub-titles.

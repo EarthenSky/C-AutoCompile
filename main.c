@@ -59,9 +59,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
                 case ID_BTN_BUILD:
                     BuildProgram();
-                    printf("open-create-proj.\n");
+                break;
+                case ID_BTN_CREATE:
+                    printf("\topen-create-proj.\n");
                     int ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_CREATE_PROJECT), hwnd, CreateProjectDlgProc);  // 'pop-up' the new window.
-                    printf("close-create-proj\n");
+                    printf("\tclose-create-proj\n");
                     if(ret == -1)
                         MessageBox(hwnd, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
                 break;
@@ -137,6 +139,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return Msg.wParam;
 }
 
+void InitConfig(void) {
+    // Init the file with titles and subtitles.
+    char formatString[] = "projects;projectCount";
+    FormatConfig(formatString);
+
+    // Edit the file:
+    // Get file as string.
+    char* fileString = NULL;
+    if ( getFileString(g_configFileName, fileString) == 1 ) {
+        printf("ERROR with file Initialization.\n");
+    } else {
+        // Create a default project
+        char key[] = "projects";
+        // Data is stored as (name, path, desc, append to command)
+        char value[] = "\002\003Project Name\003C:\\_Programming\\TestProject\003Project Description\003-append this to the command string.";
+        fileString = ConfigAddRow(fileString, key, value);  // Add a row to the config string.
+
+        // REMEMBER TO MAKE THIS GO UP EACH TIME A NEW ROW IS ADDED.
+        char key2[] = "projectCount";
+        char value2[] = "\002\0031";  // init as 1.
+        fileString = ConfigAddRow(fileString, key2, value2);  // Add a row to the config string.
+
+        //ItemContents_t results = ReadItem(fileString, key, 1, 2);  // Read item 1 to results
+        //printf("Out - Results: %c\n", results.contentIdentifier);  //DEBUG: this.
+        //printf("Out - Results: %s\n", results.itemString);  //DEBUG: this.
+        //DealocateItemContents(results);  // Dealocate the read item.
+        //fileString = WriteRow(fileString, key, 1, value4);
+        //printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
+
+        // Open Write filsstring to file.
+        FILE *fptr = fopen(g_configFileName, "w");
+        fprintf(fptr, fileString);
+        fclose(fptr);
+    }
+
+    free(fileString);  // Dealocate fileString.
+}
+
 void InitProgram(void) {
     printf("Initializing Program.\n");
 
@@ -146,54 +186,12 @@ void InitProgram(void) {
     //Create the data file if it doesn't exist.
     if (fptr == NULL) {
         printf("Creating config file.\n");
-        fptr = fopen(g_configFileName, "w");
+        InitConfig();  // Create the config file.
     }
 
     fclose(fptr);  // Close file.
 
-    // Init the file with titles and subtitles.
-    //char formatString[] = "projects";
-    char formatString[] = "title.subtitle;title2.subtitle.subtitle2.subtitle3;numbers";
-    FormatConfig(formatString);
-
-    // Get file as string.
-    char* fileString = NULL;
-    if ( getFileString(g_configFileName, fileString) == 1 ) {
-        printf("ERROR with file Initialization.\n");
-    } else {
-        // Create rows.
-        char key[] = "title2.subtitle2";
-        char value[] = "\002\003hey1\003hello2";  // Remember the \002.
-        fileString = ConfigAddRow(fileString, key, value);  // Add a row to the config string.
-
-        char value2[] = "\002\003next_row\003hey2\003hello3";  // Remember the \002.
-        fileString = ConfigAddRow(fileString, key, value2);  // Add a row to the config string.
-
-        char key2[] = "numbers";
-        char value3[] = "\002\0031\003245\00377463";  // Remember the \002.
-        fileString = ConfigAddRow(fileString, key2, value3);  // Add a row to the config string.
-
-        ItemContents_t results = ReadItem(fileString, key, 1, 2);  // Read item 1 to results
-        //printf("Out - Results: %c\n", results.contentIdentifier);  //DEBUG: this.
-        //printf("Out - Results: %s\n", results.itemString);  //DEBUG: this.
-        DealocateItemContents(results);  // Dealocate array.
-        printf("Out - File Contents Before: %s\n", fileString);  //DEBUG: this.
-
-        char value4[] = "\002\003OHMYGODANEWROW!\003hey3\003hello4";
-        fileString = WriteRow(fileString, key, 1, value4);
-
-        printf("Out - File Contents After: %s\n", fileString);  //DEBUG: this.
-
-        printf("Writing File.\n");
-        fptr = fopen(g_configFileName, "w");  // Open file for writing.
-        fprintf(fptr, fileString);  // Write file.
-        fclose(fptr);  // Close file.
-        printf("Finished Writing File.\n");
-    }
-
-    free(fileString);  // Dealocate fileString.
-
-    //TODO: read the data file and fill the listbox with the existing projects.
+    //TODO: read the data file and fill the listbox with the existing projects ACTUALLY: just do this in layout.c
 
     printf("Done Initialization.\n");
 }

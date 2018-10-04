@@ -1,5 +1,6 @@
 #include "layout.h"
 
+void InitLBProjects(void);
 void CreateMenu(HWND);
 void AddMainControls(HWND, HINSTANCE);
 void AddProjectControls(HWND, HINSTANCE);
@@ -26,14 +27,42 @@ void InitLayout(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hIn
     //ShowWindow(hEditPath, SW_HIDE);  // Hide control
     //ShowWindow(hEditPath, SW_SHOW);  // Show control
 
-    //init listbox.
-    SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 1");
-    SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 2");
-    SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 3");
+    InitLBProjects();
 
     // Hide project creation controls.
     //ShowWindow(hEditProjectDesc, SW_HIDE);  // Hide control
 
+}
+
+void InitLBProjects(void) {
+    // Read the file items.
+    char* fileString = NULL;
+    if ( getFileString(g_configFileName, fileString) == 1 ) {
+        printf("ERROR with file Initialization.\n");
+    } else {
+
+        // Get how many projects there are.
+        int projectCount = 0;
+        char key[] = "projectCount";
+        ItemContents_t results = ReadItem(fileString, key, 0, 0);
+        projectCount = atoi(results.itemString);  // Get the integer value.
+        DealocateItemContents(results);  // Dealocate the read item.
+        printf("PROJECT_COUNT : %i\n", projectCount);
+
+        char key2[] = "projects";
+        for (int i=0; i<projectCount; i++) {
+            results = ReadItem(fileString, key2, i, 0);  // Read item 1 to results
+            SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)results.itemString);
+            DealocateItemContents(results);  // Dealocate the read item.
+        }
+    }
+
+    free(fileString);  // Dealocate fileString.
+
+    //init listbox.
+    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 1");
+    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 2");
+    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 3");
 }
 
 // This function creates the menu bar.
