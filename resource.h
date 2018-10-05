@@ -27,6 +27,7 @@
     #define ID_TEXT_PROJECT 4001
 
     #define ID_LBL_BUILD 5001
+    #define ID_LBL_PROJECT 5001
 
     // Menu
     #define ID_FILE_EXIT 9001

@@ -7,13 +7,14 @@ void AddProjectControls(HWND, HINSTANCE);
 
 // All window controls are global (but only in this file.)
 static HWND hBtnBuild;
-static HWND hStaticLabel;
+static HWND hStaticLabelBuild;
 static HWND hBtnSelect;
 static HWND hTextProject;
 static HWND hBtnCreate;
 static HWND hEditBuildComment;
 static HWND hListBoxProject;
 
+static HWND hStaticLabelProject;
 static HWND hEditProjectName;
 static HWND hEditPath;
 static HWND hEditProjectDesc;
@@ -21,7 +22,7 @@ static HWND hEditProjectDesc;
 void InitLayout(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hInstance) {
     CreateMenu(hwnd);
     AddMainControls(hwnd, hInstance);
-    AddProjectControls(hwnd, hInstance);
+    //AddProjectControls(hwnd, hInstance);
 
     //SetDlgItemText(hwnd, ID_LB_PROJECT, "This is a string");  // This is how to set text to a control.
     //ShowWindow(hEditPath, SW_HIDE);  // Hide control
@@ -40,7 +41,6 @@ void InitLBProjects(void) {
     if ( getFileString(g_configFileName, fileString) == 1 ) {
         printf("ERROR with file Initialization.\n");
     } else {
-
         // Get how many projects there are.
         int projectCount = 0;
         char key[] = "projectCount";
@@ -88,7 +88,7 @@ void CreateMenu(HWND hwnd) {
 
 // This creates all the window controls.
 void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
-    const int BRK = 8;  //break
+    const int BRK = 16;  //break
 
     // Create the build button.
     hBtnBuild = CreateWindowEx(
@@ -98,8 +98,8 @@ void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
         hwnd, (HMENU) ID_BTN_BUILD, hInstance, NULL
     );
 
-    // Create the build button.
-    hStaticLabel = CreateWindowEx(
+    // Create the label.
+    hStaticLabelBuild = CreateWindowEx(
         WS_EX_APPWINDOW, "STATIC", "Build Comment:",
         WS_CHILD | WS_VISIBLE,
         BRK, BRK*2+64, 192, 24,
@@ -114,28 +114,36 @@ void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
         hwnd, (HMENU) ID_EDIT_BUILD_COMMENT, hInstance, NULL
     );
 
-    // Create the select button.
-    hBtnSelect = CreateWindowEx(
-        WS_EX_CLIENTEDGE, "BUTTON", "Select Project",  // the second parameter must be the string "button"
-        WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | WS_TABSTOP,
-        BRK*2+192, BRK, 192, 32,
-        hwnd, (HMENU) ID_BTN_SELECT, hInstance, NULL
-    );
-
-    // Create the project select listbox
-    hListBoxProject = CreateWindowEx(
-        WS_EX_CLIENTEDGE, "LISTBOX", NULL,
-        WS_CHILD | WS_VISIBLE /*| WM_VSCROLL*/ | ES_AUTOVSCROLL | WS_TABSTOP,
-        BRK*2+192, BRK*3+24+32, 192, 192,
-        hwnd, (HMENU) ID_LB_PROJECT, hInstance, NULL
+    // Create the label.
+    hStaticLabelProject = CreateWindowEx(
+        WS_EX_APPWINDOW, "STATIC", "Selected Project:",
+        WS_CHILD | WS_VISIBLE,
+        BRK*2+192, BRK, 192, 16,
+        hwnd, (HMENU) ID_LBL_PROJECT, hInstance, NULL
     );
 
     // Create a EDIT element (for text.)
     hTextProject = CreateWindowEx(
         WS_EX_STATICEDGE, "EDIT", "No Project Selected",
         WS_CHILD | WS_VISIBLE | ES_LEFT | ES_AUTOHSCROLL | ES_READONLY,
-        BRK*2+192, BRK*2+32, 192, 24,
+        BRK*2+192, BRK+16, 192, 24,
         hwnd, (HMENU) ID_TEXT_PROJECT, hInstance, NULL
+    );
+
+    // Create the project select listbox
+    hListBoxProject = CreateWindowEx(
+        WS_EX_CLIENTEDGE, "LISTBOX", NULL,
+        WS_CHILD | WS_VISIBLE /*| WM_VSCROLL*/ | ES_AUTOVSCROLL | WS_TABSTOP,
+        BRK*2+192, BRK*2+24+16, 192, 192,
+        hwnd, (HMENU) ID_LB_PROJECT, hInstance, NULL
+    );
+
+    // Create the select button.
+    hBtnSelect = CreateWindowEx(
+        WS_EX_CLIENTEDGE, "BUTTON", "Edit Project",  // the second parameter must be the string "button"
+        WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | WS_TABSTOP,
+        BRK*2+192, BRK*3+24+192, 192, 24,
+        hwnd, (HMENU) ID_BTN_SELECT, hInstance, NULL
     );
 
     // Create the Create Project button.
@@ -147,6 +155,7 @@ void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
     );
 }
 
+/*
 // This creates all the window controls.
 void AddProjectControls(HWND hwnd, HINSTANCE hInstance) {
     int xPos = 8*3+192*2;  // The x pos of this row.
@@ -173,3 +182,4 @@ void AddProjectControls(HWND hwnd, HINSTANCE hInstance) {
         hwnd, (HMENU) ID_EDIT_PROJECT_DESC, hInstance, NULL
     );
 }
+*/

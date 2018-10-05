@@ -1,1 +1,0 @@
-This is just a program made to test out using the win32 api, mostly.

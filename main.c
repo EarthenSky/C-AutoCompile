@@ -21,7 +21,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
         case WM_CTLCOLORSTATIC:  // Make static controls have a TRANSPARENT background.
         {
-            if (ID_LBL_BUILD == GetDlgCtrlID((HWND)lParam)) {  // only affect the specific id'd dialog.
+            if (GetDlgCtrlID((HWND)lParam) == ID_LBL_BUILD ||
+                GetDlgCtrlID((HWND)lParam) == ID_LBL_PROJECT) {  // only affect the specific ids' attributes.
+
                 HDC hdcStatic = (HDC) wParam;
                 SetTextColor(hdcStatic, RGB(0,0,0));  // Set colour.
                 SetBkMode(hdcStatic, TRANSPARENT);
