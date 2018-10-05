@@ -31,24 +31,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-        //case WM_LBUTTONDOWN:
-        //{
-            //char szFileName[MAX_PATH];
-            //HINSTANCE hInstance = GetModuleHandle(NULL);
-
-            //GetModuleFileName(hInstance, szFileName, MAX_PATH);
-            //MessageBox(hwnd, szFileName, "This program is located at:", MB_OK | MB_ICONINFORMATION);
-        //}
-        //break;
         case WM_COMMAND:
             switch(LOWORD(wParam))
             {
-                case ID_FILE_EXIT:
+                case ID_FILE_EXIT: {
                     printf("exiting program.\n");
                     PostMessage(hwnd, WM_CLOSE, 0, 0);
+                }
                 break;
-                case ID_HELP_ABOUT:
-                {
+                case ID_HELP_ABOUT: {
                     printf("open-about.\n");
                     int ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_ABOUT), hwnd, AboutDlgProc);  // 'pop-up' the new window.
                     printf("close-about\n");
@@ -56,18 +47,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         MessageBox(hwnd, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
                 }
                 break;
-                case ID_STUFF_GO:
-                    printf("just go.\n");
-                break;
-                case ID_BTN_BUILD:
+                case ID_BTN_BUILD: {
                     BuildProgram();
+                }
                 break;
-                case ID_BTN_CREATE:
-                    printf("\topen-create-proj.\n");
-                    int ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_CREATE_PROJECT), hwnd, CreateProjectDlgProc);  // 'pop-up' the new window.
-                    printf("\tclose-create-proj\n");
-                    if(ret == -1)
-                        MessageBox(hwnd, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+                case ID_BTN_CREATE: {
+                    CreateNewProject(hInstance, hwnd);
+                }
+                break;
+                case ID_BTN_EDIT: {
+                    EditProject((HWND)lParam);  // Edit the project.
+                }
+                break;
+                case ID_LB_PROJECT: {
+                    if ( HIWORD(wParam) == LBN_SELCHANGE ) {
+                        DWORD dwSel = SendMessage((HWND)lParam, LB_GETCURSEL, 0, 0);  // Get id of selected item.
+                        if (dwSel >= 0) {
+                            // Get string of selected item.
+                            int stringLength = SendMessage((HWND)lParam, LB_GETTEXTLEN, dwSel, 0);
+                            char holderString[stringLength];
+                            SendMessage((HWND)lParam, LB_GETTEXT, dwSel, (LPARAM)holderString);
+                            printf("holderString: %s\n", holderString);
+                            SetDlgItemText(hwnd, ID_TEXT_PROJECT, holderString);  // This is how to set text to a control.
+                        } else {
+                            printf("ERROR:8982 (this is just a random number)\n");
+                        }
+                    }
+                }
                 break;
             }
         break;
@@ -200,6 +206,19 @@ void InitProgram(void) {
 
 // This function will build the program.
 void BuildProgram(void) {
-    printf("Starting Building Program.\n");
     printf("Error: Building not yet implemented.\n");
+}
+
+// This function will build the program.
+void CreateNewProject(HINSTANCE hInstance, HWND hwnd) {
+    printf("\topen-create-proj.\n");
+    int ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_CREATE_PROJECT), hwnd, CreateProjectDlgProc);  // 'pop-up' the new window.
+    printf("\tclose-create-proj\n");
+    if(ret == -1)
+        MessageBox(hwnd, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+}
+
+// hwnd == hWindow;
+void EditProject(HWND hwnd) {
+    printf("Error: EditProject not yet implemented.\n");
 }

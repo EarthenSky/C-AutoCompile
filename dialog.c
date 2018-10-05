@@ -42,8 +42,8 @@ BOOL CALLBACK CreateProjectDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
         case WM_COMMAND:
             switch(LOWORD(wParam))
             {
-                case IDOK:
-                    TCHAR titleStr[128];
+                case IDOK: {
+                    TCHAR titleStr[128];  // TODO: FIX THIS. -> STRING[128]; ... I think>?
                     TCHAR pathStr[128];
                     GetDlgItemText(hwnd, DB_ID_EDIT_NAME, titleStr, 128);
                     GetDlgItemText(hwnd, DB_ID_EDIT_NAME, pathStr, 128);
@@ -54,22 +54,19 @@ BOOL CALLBACK CreateProjectDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
                     } else {
                         PushError();  // This says you can't exit via ok.
                     }
+                }
                 break;
                 case IDCANCEL:
                     EndDialog(hwnd, IDCANCEL);  // This destroys the current window.
                 break;
             }
         break;
-        case WM_CLOSE:
-        {
+        case WM_CLOSE: {
             EndDialog(hwnd, IDCANCEL);  // Exiting the window has the same affect as pressing cancel.
             return TRUE;
         }
-        case WM_KEYDOWN:
-        {
-            printf("oyoyoyo");
+        case WM_KEYDOWN: {
             if(wParam == VK_RETURN) {
-                printf("oy");
                 return TRUE;  // Stop enter from exiting the control.
             }
         }
@@ -85,8 +82,9 @@ bool VerifyInput(char* title, char* path) {
     //printf( "NULL: %s\n", NULL );
 
     bool isEmpty = FALSE;
-    if (strcmp(title, "") == 0 && strcmp(path, "") == 0) {
+    if (strcmp(title, "") == 0 || strcmp(path, "") == 0) {
         printf("Project title and path must to be filled in.\n");
+        printf("title: %s, path: %s\n", title, path);
         isEmpty = TRUE;
     }
 

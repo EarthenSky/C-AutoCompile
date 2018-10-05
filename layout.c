@@ -1,9 +1,10 @@
 #include "layout.h"
 
-void InitLBProjects(void);
+
 void CreateMenu(HWND);
 void AddMainControls(HWND, HINSTANCE);
-void AddProjectControls(HWND, HINSTANCE);
+void InitLBProjects(void);
+//void AddProjectControls(HWND, HINSTANCE);
 
 // All window controls are global (but only in this file.)
 static HWND hBtnBuild;
@@ -13,56 +14,22 @@ static HWND hTextProject;
 static HWND hBtnCreate;
 static HWND hEditBuildComment;
 static HWND hListBoxProject;
-
 static HWND hStaticLabelProject;
-static HWND hEditProjectName;
-static HWND hEditPath;
-static HWND hEditProjectDesc;
+
+//TODO: remove.
+//static HWND hEditProjectName;
+//static HWND hEditPath;
+//static HWND hEditProjectDesc;
 
 void InitLayout(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hInstance) {
     CreateMenu(hwnd);
     AddMainControls(hwnd, hInstance);
     //AddProjectControls(hwnd, hInstance);
-
     //SetDlgItemText(hwnd, ID_LB_PROJECT, "This is a string");  // This is how to set text to a control.
     //ShowWindow(hEditPath, SW_HIDE);  // Hide control
     //ShowWindow(hEditPath, SW_SHOW);  // Show control
 
     InitLBProjects();
-
-    // Hide project creation controls.
-    //ShowWindow(hEditProjectDesc, SW_HIDE);  // Hide control
-
-}
-
-void InitLBProjects(void) {
-    // Read the file items.
-    char* fileString = NULL;
-    if ( getFileString(g_configFileName, fileString) == 1 ) {
-        printf("ERROR with file Initialization.\n");
-    } else {
-        // Get how many projects there are.
-        int projectCount = 0;
-        char key[] = "projectCount";
-        ItemContents_t results = ReadItem(fileString, key, 0, 0);
-        projectCount = atoi(results.itemString);  // Get the integer value.
-        DealocateItemContents(results);  // Dealocate the read item.
-        printf("PROJECT_COUNT : %i\n", projectCount);
-
-        char key2[] = "projects";
-        for (int i=0; i<projectCount; i++) {
-            results = ReadItem(fileString, key2, i, 0);  // Read item 1 to results
-            SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)results.itemString);
-            DealocateItemContents(results);  // Dealocate the read item.
-        }
-    }
-
-    free(fileString);  // Dealocate fileString.
-
-    //init listbox.
-    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 1");
-    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 2");
-    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 3");
 }
 
 // This function creates the menu bar.
@@ -76,10 +43,6 @@ void CreateMenu(HWND hwnd) {
     AppendMenu(hSubMenu, MF_STRING, ID_FILE_EXIT, "E&xit");
 
     hSubMenu = CreatePopupMenu();
-    AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Stuff");
-    AppendMenu(hSubMenu, MF_STRING, ID_STUFF_GO, "&Go");
-
-    hSubMenu = CreatePopupMenu();
     AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Help");
     AppendMenu(hSubMenu, MF_STRING, ID_HELP_ABOUT, "&About");
 
@@ -88,7 +51,7 @@ void CreateMenu(HWND hwnd) {
 
 // This creates all the window controls.
 void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
-    const int BRK = 16;  //break
+    const int BRK = 8;  //break
 
     // Create the build button.
     hBtnBuild = CreateWindowEx(
@@ -133,17 +96,17 @@ void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
     // Create the project select listbox
     hListBoxProject = CreateWindowEx(
         WS_EX_CLIENTEDGE, "LISTBOX", NULL,
-        WS_CHILD | WS_VISIBLE /*| WM_VSCROLL*/ | ES_AUTOVSCROLL | WS_TABSTOP,
+        WS_CHILD | WS_VISIBLE /*| WM_VSCROLL*/ | ES_AUTOVSCROLL | WS_TABSTOP | LBS_NOTIFY,
         BRK*2+192, BRK*2+24+16, 192, 192,
         hwnd, (HMENU) ID_LB_PROJECT, hInstance, NULL
     );
 
     // Create the select button.
     hBtnSelect = CreateWindowEx(
-        WS_EX_CLIENTEDGE, "BUTTON", "Edit Project",  // the second parameter must be the string "button"
+        WS_EX_CLIENTEDGE, "BUTTON", "Edit Current Project",  // the second parameter must be the string "button"
         WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | WS_TABSTOP,
         BRK*2+192, BRK*3+24+192, 192, 24,
-        hwnd, (HMENU) ID_BTN_SELECT, hInstance, NULL
+        hwnd, (HMENU) ID_BTN_EDIT, hInstance, NULL
     );
 
     // Create the Create Project button.
@@ -153,6 +116,36 @@ void AddMainControls(HWND hwnd, HINSTANCE hInstance) {
         BRK*2+192, BRK*3.5+24*2+192, 192, 24,
         hwnd, (HMENU) ID_BTN_CREATE, hInstance, NULL
     );
+}
+
+void InitLBProjects(void) {
+    // Read the file items.
+    char* fileString = NULL;
+    if ( getFileString(g_configFileName, fileString) == 1 ) {
+        printf("ERROR with file Initialization.\n");
+    } else {
+        // Get how many projects there are.
+        int projectCount = 0;
+        char key[] = "projectCount";
+        ItemContents_t results = ReadItem(fileString, key, 0, 0);
+        projectCount = atoi(results.itemString);  // Get the integer value.
+        DealocateItemContents(results);  // Dealocate the read item.
+        printf("PROJECT_COUNT : %i\n", projectCount);
+
+        char key2[] = "projects";
+        for (int i=0; i<projectCount; i++) {
+            results = ReadItem(fileString, key2, i, 0);  // Read item 1 to results
+            SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)results.itemString);
+            DealocateItemContents(results);  // Dealocate the read item.
+        }
+    }
+
+    free(fileString);  // Dealocate fileString.
+
+    //init listbox.
+    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 1");
+    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 2");
+    //SendMessage(hListBoxProject, LB_ADDSTRING, 0, (LPARAM)"Project 3");
 }
 
 /*

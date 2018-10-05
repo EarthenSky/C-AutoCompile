@@ -12,9 +12,10 @@
     #define DB_ID_EDIT_NAME 401  //DB == DialogBox
     #define DB_ID_EDIT_PATH 402  //DB == DialogBox
     #define DB_ID_EDIT_COMMENT 403  //DB == DialogBox
+    #define DB_ID_EDIT_APPEND 403  //DB == DialogBox
 
     #define ID_BTN_BUILD 1001
-    #define ID_BTN_SELECT 1002
+    #define ID_BTN_EDIT 1002
     #define ID_BTN_CREATE 1003
 
     #define ID_EDIT_PATH 2001

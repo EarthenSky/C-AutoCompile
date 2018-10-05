@@ -11,13 +11,12 @@
     #include "ptconfig.h"  // This contains functions for interacting with the config file.
 
     const char g_className[] = "testWindowClass";
-    const int WINDOW_WIDTH = 8*4+192*3+16+2;
-    const int WINDOW_HEIGHT = 464;
-
-    //const char BUTTON_NAME[] = "button";
-    //const char EDIT_NAME[] = "edit";
+    const int WINDOW_WIDTH = 8*4+192*2+2;
+    const int WINDOW_HEIGHT = 8*3+192+24*6-6;
 
     void BuildProgram(void);
     void InitProgram(void);
+    void CreateNewProject(HINSTANCE hInstance, HWND hwnd);
+    void EditProject(HWND hwnd);
 
 #endif  //MAIN
