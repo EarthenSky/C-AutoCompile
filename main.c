@@ -152,8 +152,7 @@ void InitConfig(void) {
     char formatString[] = "projects;projectCount";
     FormatConfig(formatString);
 
-    // Edit the file:
-    // Get file as string.
+    // Retrieve file as string.
     char* fileString = NULL;
     if ( getFileString(g_configFileName, fileString) == 1 ) {
         printf("ERROR with file Initialization.\n");

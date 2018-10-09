@@ -24,7 +24,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Create New Project"
 FONT 8, "Consolas"
 BEGIN
-    CTEXT           "Project Name*:",IDC_STATIC, 8,8+2,56,12, WS_GROUP
+    CTEXT           "Project Name*:",IDC_STATIC,8,8+2,56,12, WS_GROUP
     EDITTEXT        DB_ID_EDIT_NAME, 8+64 -4,8,96+10,12, ES_LEFT | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL
 
     CTEXT           "Project Path*:",IDC_STATIC,8,8*2+12+2,56,12, WS_GROUP

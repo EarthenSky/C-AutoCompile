@@ -4,10 +4,8 @@
 /// Row items cannot contain '\001', '\002', '\003', or '\004' in .ptconfig files.
 
 // WARNING: Almost no error check is in this code.
-
-/// EDIT: I'm no longer doing the \004 and \003 thing, they are both just \003 now, types can do what they want.
-
-/// NOTE: To any future programmers, don't copy this, redo the entire thing. 100%.
+// EDIT: I'm no longer doing the \004 and \003 thing, they are both just \003 now, types can do what they want.
+// NOTE: To any future programmers, don't copy this, redo the entire thing. 100%.
 
 // This is a string function to cutr from front.
 #include <assert.h>
@@ -71,7 +69,7 @@ char* multi_tok(char* input, const char* delimiter) {
 // This function inserts to into from and puts them.
 // The string must be freed after use. "free(str)"
 char* insertString(char* to, char* from, int position) {
-    char* outString = (char*)malloc( (strlen(to)+strlen(from)+1)*sizeof(char) );
+    char* outString = (char*)malloc( (strlen(to)+strlen(from)+2)*sizeof(char) );
 
     strncpy(outString, to, position);
     outString[position] = '\0';
@@ -410,7 +408,7 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
     }
     ExitSubtitleWhile:
 
-    printf("FilsString is %s\n", fileString);
+    //printf("FilsString is %s\n", fileString);
     // Filestring has cutoff all but here -> \002\003rowstuff ...
 
     // Find entire row contents:
@@ -432,10 +430,10 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
-    //printf("rowContents: %s\n", ptrStr);
+    //printf("rowContents!!!: %s\n", ptrStr);
 
     // Remove row.  Modify the clean string (only neccisary changes for output.)
-    str_cut(cleanFileString, insertPosition, strlen(rowContents)+1);
+    str_cut(cleanFileString, insertPosition, strlen(rowContents)-1);
 
     //printf("\tRemoved : %s\n", cleanFileString);
 
@@ -470,7 +468,6 @@ void DealocateItemContents(ItemContents_t itemContents) {
         printf("God speed, exceution should not get here.\n");
     }
 }
-
 
 /// Returns 1 if failed, 0 if pass.
 /// This function formats the config file and adds all needed titles and sub-titles.
@@ -653,3 +650,5 @@ char* ConfigAddRow(char* fileStringIn, char* keyString, char* rowInitString) {
 
     return outFileStringPtr;
 }
+
+// 650 lines? (*-_-)

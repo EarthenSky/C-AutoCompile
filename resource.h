@@ -12,7 +12,7 @@
     #define DB_ID_EDIT_NAME 401  //DB == DialogBox
     #define DB_ID_EDIT_PATH 402  //DB == DialogBox
     #define DB_ID_EDIT_COMMENT 403  //DB == DialogBox
-    #define DB_ID_EDIT_APPEND 403  //DB == DialogBox
+    #define DB_ID_EDIT_APPEND 404  //DB == DialogBox
 
     #define ID_BTN_BUILD 1001
     #define ID_BTN_EDIT 1002
@@ -28,7 +28,7 @@
     #define ID_TEXT_PROJECT 4001
 
     #define ID_LBL_BUILD 5001
-    #define ID_LBL_PROJECT 5001
+    #define ID_LBL_PROJECT 5002
 
     // Menu
     #define ID_FILE_EXIT 9001
