@@ -30,9 +30,11 @@
     #define ID_LBL_BUILD 5001
     #define ID_LBL_PROJECT 5002
 
-    // Menu
+    // Menu item IDs.
     #define ID_FILE_EXIT 9001
-    #define ID_STUFF_GO 9002
-    #define ID_HELP_ABOUT 9003
+    #define ID_PROJECT_NEW 9002
+    #define ID_PROJECT_DELETE 9003
+    #define ID_PROJECT_EDIT 9004
+    #define ID_HELP_ABOUT 9005
 
 #endif  //RESOURCE

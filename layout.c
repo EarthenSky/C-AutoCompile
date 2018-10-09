@@ -1,6 +1,5 @@
 #include "layout.h"
 
-
 void CreateMenu(HWND);
 void AddMainControls(HWND, HINSTANCE);
 void InitLBProjects(void);
@@ -41,6 +40,12 @@ void CreateMenu(HWND hwnd) {
     hSubMenu = CreatePopupMenu();
     AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&File");
     AppendMenu(hSubMenu, MF_STRING, ID_FILE_EXIT, "E&xit");
+
+    hSubMenu = CreatePopupMenu();
+    AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Project");
+    AppendMenu(hSubMenu, MF_STRING, ID_PROJECT_NEW, "Create &New Project");
+    AppendMenu(hSubMenu, MF_STRING, ID_PROJECT_DELETE, "&Delete Current Project");
+    AppendMenu(hSubMenu, MF_STRING, ID_PROJECT_EDIT, "&Edit Current Project");
 
     hSubMenu = CreatePopupMenu();
     AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Help");

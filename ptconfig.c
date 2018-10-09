@@ -403,7 +403,6 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
             chopN(fileString, frontCutoffLength); insertPosition += frontCutoffLength;
         }
-
         //printf("test\n");
     }
     ExitSubtitleWhile:
@@ -413,7 +412,8 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
     // Find entire row contents:
     strcpy(tmpFileString, fileString);
-    ptrStr = strtok(tmpFileString, "\002");
+    printf("fileString: %s\n", fileString);
+    ptrStr = strtok(tmpFileString, "\002\001");
 
     index = 0;
     while (ptrStr != NULL) {
@@ -422,6 +422,7 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
             goto ExitRowWhile;
         }
 
+        printf("ptrStr: %s\n", ptrStr);
         insertPosition += strlen(ptrStr)+1;
         index++;
         ptrStr = strtok (NULL, "\002\001");  // Go to next item.
@@ -430,17 +431,15 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
-    //printf("rowContents!!!: %s\n", ptrStr);
+    printf("rowContents!!!: %s\n", ptrStr);
 
     // Remove row.  Modify the clean string (only neccisary changes for output.)
-    str_cut(cleanFileString, insertPosition, strlen(rowContents)-1);
-
+    str_cut(cleanFileString, insertPosition, strlen(rowContents)+1);
     //printf("\tRemoved : %s\n", cleanFileString);
 
     // Insert row.
     char* outFileStringPtr;
     outFileStringPtr = insertString(cleanFileString, rowString, insertPosition);
-
     //printf("\toutFileStringPtr : %s\n", outFileStringPtr);
 
     // Dealocate pointers.

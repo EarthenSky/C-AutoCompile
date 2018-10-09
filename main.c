@@ -51,22 +51,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     BuildProgram();
                 }
                 break;
+                case ID_PROJECT_NEW:
                 case ID_BTN_CREATE: {
                     CreateNewProject(hInstance, hwnd);
                 }
                 break;
+                case ID_PROJECT_EDIT:
                 case ID_BTN_EDIT: {
                     EditProject((HWND)lParam);  // Edit the project.
                 }
                 break;
+                case ID_PROJECT_DELETE: {
+                    DeleteProject(hwnd);  // Edit the project.
+                }
+                break;
                 case ID_LB_PROJECT: {
                     if ( HIWORD(wParam) == LBN_SELCHANGE ) {
-                        DWORD dwSel = SendMessage((HWND)lParam, LB_GETCURSEL, 0, 0);  // Get id of selected item.
-                        if (dwSel >= 0) {
+                        DWORD selectedId = SendMessage((HWND)lParam, LB_GETCURSEL, 0, 0);  // Get id of selected item.
+                        if (selectedId >= 0) {
                             // Get string of selected item.
-                            int stringLength = SendMessage((HWND)lParam, LB_GETTEXTLEN, dwSel, 0);
+                            int stringLength = SendMessage((HWND)lParam, LB_GETTEXTLEN, selectedId, 0);
                             char holderString[stringLength];
-                            SendMessage((HWND)lParam, LB_GETTEXT, dwSel, (LPARAM)holderString);
+                            SendMessage((HWND)lParam, LB_GETTEXT, selectedId, (LPARAM)holderString);
                             printf("holderString: %s\n", holderString);
                             SetDlgItemText(hwnd, ID_TEXT_PROJECT, holderString);  // This is how to set text to a control.
                         } else {
@@ -220,4 +226,49 @@ void CreateNewProject(HINSTANCE hInstance, HWND hwnd) {
 // hwnd == hWindow;
 void EditProject(HWND hwnd) {
     printf("Error: EditProject not yet implemented.\n");
+}
+
+// hwnd == hWindow;
+void DeleteProject(HWND hwnd) {
+    // Get the listbox handle.
+    HWND hListBoxProject = GetDlgItem(hwnd, ID_LB_PROJECT);
+    DWORD selectedId = SendMessage(hListBoxProject, LB_GETCURSEL, 0, 0);  // Get id of selected item.
+    printf("ID: %i\n", selectedId);
+    if (selectedId != LB_ERR) {
+        printf("NO00000000!\n");
+        // Retrieve file as string.
+        char* fileString = NULL;
+        if ( getFileString(g_configFileName, fileString) == 1 ) {
+            printf("ERROR with file Initialization.\n");
+        } else {
+            char key[] = "projects";  char value[] = "";
+            fileString = WriteRow(fileString, key, selectedId, value);  // Write an empty row.
+
+            // Get how many projects there are.
+            int projectCount = 0;
+            char key2[] = "projectCount";
+            ItemContents_t results = ReadItem(fileString, key2, 0, 0);
+            projectCount = atoi(results.itemString);  // Get the integer value.
+            DealocateItemContents(results);  // Dealocate the read item.
+            projectCount--;  // MAKE projectCount GO DOWN 1 EACH TIME A NEW ROW IS REMOVED.
+            printf("ALIVE\n");
+            int value2Length = strlen("\002\003") + N_DIGITS(projectCount)+1;
+            char value2[value2Length];
+            printf("ALIVE2\n");
+            sprintf(value2, "\002\003%i", projectCount);
+            printf("ALIVE3\n");
+            fileString = WriteRow(fileString, key2, 0, value2);  // Update projectCount
+            printf("ALIVE4\n");
+            // Open Write filestring to file.
+            FILE *fptr = fopen(g_configFileName, "w");
+            fprintf(fptr, fileString);
+            fclose(fptr);
+        }
+        free(fileString);  // Dealocate fileString.
+
+        // Remove the selected project from the project selection list box.
+        SendMessage(hListBoxProject, LB_DELETESTRING, selectedId, 0);
+    } else {
+        printf("ERROR:7364 (this is just a random number)\n");
+    }
 }

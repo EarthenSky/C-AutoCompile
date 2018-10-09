@@ -1,7 +1,5 @@
 #include "dialog.h"
 
-#define N_DIGITS(num) floor(log10(abs(num))) + 1;  // This is just a tiny macro function.
-
 // This is for the about dialog box.
 // (nothing in the default case [no defwindowproc], is done automagically.)
 BOOL CALLBACK AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
@@ -103,7 +101,7 @@ bool VerifyInput(char* title, char* path) {
     //printf( "title: %s\n", title=="c\0" );
     //printf( "path: %s\n", path=="c\0" );
     //printf( "NULL: %s\n", NULL );
-    printf("\ttitle: %s, path: %s\n", title, path);
+    //printf("\ttitle: %s, path: %s\n", title, path);
 
     bool isEmpty = FALSE;
     if(strcmp(title, "") == 0 || strcmp(path, "") == 0) {
@@ -145,7 +143,7 @@ void ProcessInput(HWND hwnd, char* title, char* path, char* desc, char* appendCo
         char value2[value2Length];
         sprintf(value2, "\002\003%i", projectCount+1);
         fileString = WriteRow(fileString, key2, 0, value2);  // Update projectCount
-        printf("fileString: %s\n", fileString);
+        //printf("fileString: %s\n", fileString);
 
         // Write filestring to file.
         FILE *fptr = fopen(g_configFileName, "w");
