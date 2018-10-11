@@ -19,7 +19,7 @@
     void BuildProgram(void);
     void InitProgram(void);
     void CreateNewProject(HINSTANCE, HWND);
-    void EditProject(HWND hwnd);
-    void DeleteProject(HWND hwnd);
+    void EditProject(HINSTANCE, HWND);
+    void DeleteProject(HWND);
 
 #endif  //MAIN

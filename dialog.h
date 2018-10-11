@@ -12,5 +12,6 @@
     // This forward declaration is so that other files can use this function.
     BOOL CALLBACK AboutDlgProc(HWND, UINT, WPARAM, LPARAM);
     BOOL CALLBACK CreateProjectDlgProc(HWND, UINT, WPARAM, LPARAM);
+    void FillDialog(void);
 
 #endif  //DIALOG

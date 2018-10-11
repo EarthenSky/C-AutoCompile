@@ -17,6 +17,19 @@ void chopN(char *str, size_t n) {
     memmove(str, str+n, len - n + 1);
 }
 
+// This function inserts from into to and puts them at position.
+// The string must be freed after use. "free(str)"
+char* insertString(char* to, char* from, int position) {
+    char* outString = (char*)malloc( (strlen(to)+strlen(from)+2)*sizeof(char) );
+
+    strncpy(outString, to, position);
+    outString[position] = '\0';
+    strcat(outString, from);
+    strcat(outString, to + position);
+
+    return outString;
+}
+
 // This function reads the entire contents of the file String
 // and returns ptr to string.
 int getFileString(const char* fileName, char* &fileStringOut) {
@@ -32,7 +45,15 @@ int getFileString(const char* fileName, char* &fileStringOut) {
 
     // Fill string with file contents.
     char fileContents[fileStringSize];
-    fgets(fileContents, fileStringSize, fptr);
+    //fileContents[fileStringSize-1] = '\0';
+
+    int index = 0;
+    char currentChar = fgetc(fptr);
+	while (currentChar != EOF) {
+	    fileContents[index] = currentChar;  // Assign the char to the string.
+		currentChar = fgetc(fptr);
+        index++;
+	}
 
     fclose(fptr);  // Close file.
 
@@ -40,6 +61,7 @@ int getFileString(const char* fileName, char* &fileStringOut) {
     if (fileStringOut == NULL) { return 1; }
 
     strcpy(fileStringOut, fileContents);
+    printf("fileStringOut: %s\n", fileStringOut);
     return 0;  // All good!
 }
 
@@ -66,19 +88,6 @@ char* multi_tok(char* input, const char* delimiter) {
     return temp;
 }
 
-// This function inserts to into from and puts them.
-// The string must be freed after use. "free(str)"
-char* insertString(char* to, char* from, int position) {
-    char* outString = (char*)malloc( (strlen(to)+strlen(from)+2)*sizeof(char) );
-
-    strncpy(outString, to, position);
-    outString[position] = '\0';
-    strcat(outString, from);
-    strcat(outString, to + position);
-
-    return outString;
-}
-
 // Remove given section from string. Negative len means remove
 // everything up to the end.
 int str_cut(char *str, int begin, int len) {
@@ -96,6 +105,7 @@ int str_cut(char *str, int begin, int len) {
 /// This function returns the value of an array at a specific table.
 /// If itemIndex = -1 then ItemContents (return value) == array of entire row (string data (doesn't the string header value.)  Type is lost.)
 ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int itemIndex) {
+    //printf("fileStringIn: %s\n\n\n", fileStringIn);
     ItemContents_t results;
 
     // Create filestring copy, so that fileStringIn isn't modifed.
@@ -140,6 +150,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         // Remove first char from file string.
         chopN(fileString, 1); //insertPosition += 1;
 
+        printf("Found: %i\n", strcmp(ptrStr, title));
         if (strcmp(ptrStr, title) == 0) {  // Case: found correct title name.
             chopN(fileString, strlen(title)); //insertPosition += strlen(title);
             // WARNING: this GOTO statement jumps to just after the while loop.
@@ -148,6 +159,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
 
         strcpy(tmpFileString, fileString);
 
+        printf("Does multi_tok()\n");
         // Search for "\001\001" and count amount to cutoff from fileString when found.
         ptrStr = multi_tok(tmpFileString, "\001\001");
         if (ptrStr == NULL) { return results; }  // Exit Condition.
@@ -157,6 +169,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         chopN(fileString, frontCutoffLength); //insertPosition += frontCutoffLength;
     }
     ExitTitleWhile:
+    printf("ALive3c\n");
 
     // Look for subtitle string.
     if (subtitle != NULL) {
@@ -189,7 +202,6 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
     // Find entire row contents:
     strcpy(tmpFileString, fileString);
     ptrStr = strtok(tmpFileString, "\002");
-
     index = 0;
     while (ptrStr != NULL) {
         if (index == rowIndex) {
@@ -246,7 +258,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         }
         itemSize = maxStringSize;  // The size of the arrayitems.
 
-        // Alocate a multidemensional array and assign values to it.
+        // Alocate a multidemensional array.
         results.rowArray = (char**)malloc(numItems*sizeof(char*));
         for(int i=0; i<numItems; i++) {
             results.rowArray[i] = (char*)malloc(itemSize*sizeof(char));
@@ -264,18 +276,19 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
             strcpy(rowContentsTmp, rowContentsCpy);
 
             char* tmpStr = strtok(rowContentsTmp, "\003");
-            if (tmpStr == NULL) {
+            if (tmpStr == NULL /*&& index >= 4*/) {
                 return results;
             }
 
-            chopN(rowContentsCpy, strlen(tmpStr)+1);
-
-            //printf("\t\ttmpStr: %s, %i\n", tmpStr, index);
-            strcpy(results.rowArray[index], tmpStr);
-
-            //printf("\t\tresults.rowArray[index]: %s\n", results.rowArray[index]);
-            //if (index > 0) {
-                //printf("\t\tresults.rowArray[index] - v2: %s\n", results.rowArray[index-1]);
+            /*if (tmpStr == NULL) {  // Case: no data, fill with a space. // TODO: changes not needed?
+                chopN(rowContentsCpy, 1);
+                char emptyString[] = " ";
+                strcpy(results.rowArray[index], emptyString);
+            }
+            else {*/
+                chopN(rowContentsCpy, strlen(tmpStr)+1);
+                printf("\t\ttmpStr: %s\n", tmpStr);
+                strcpy(results.rowArray[index], tmpStr);
             //}
 
             index++;
@@ -407,12 +420,10 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
     }
     ExitSubtitleWhile:
 
-    //printf("FilsString is %s\n", fileString);
-    // Filestring has cutoff all but here -> \002\003rowstuff ...
+    // Filestring has cutoff all text until here -> \002\003rowstuff ...
 
     // Find entire row contents:
     strcpy(tmpFileString, fileString);
-    printf("fileString: %s\n", fileString);
     ptrStr = strtok(tmpFileString, "\002\001");
 
     index = 0;
@@ -422,7 +433,6 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
             goto ExitRowWhile;
         }
 
-        printf("ptrStr: %s\n", ptrStr);
         insertPosition += strlen(ptrStr)+1;
         index++;
         ptrStr = strtok (NULL, "\002\001");  // Go to next item.
@@ -431,6 +441,7 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
+    printf("rowContents!!!: %s\n", ptrStr);
     printf("rowContents!!!: %s\n", ptrStr);
 
     // Remove row.  Modify the clean string (only neccisary changes for output.)

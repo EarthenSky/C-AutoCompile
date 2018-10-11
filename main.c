@@ -58,7 +58,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
                 case ID_PROJECT_EDIT:
                 case ID_BTN_EDIT: {
-                    EditProject((HWND)lParam);  // Edit the project.
+                    EditProject(hInstance, hwnd);  // Edit the project.
                 }
                 break;
                 case ID_PROJECT_DELETE: {
@@ -66,14 +66,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
                 break;
                 case ID_LB_PROJECT: {
-                    if ( HIWORD(wParam) == LBN_SELCHANGE ) {
+                    if ( HIWORD(wParam) == LBN_SELCHANGE ) {  // Case: new listbox selection.
                         DWORD selectedId = SendMessage((HWND)lParam, LB_GETCURSEL, 0, 0);  // Get id of selected item.
                         if (selectedId >= 0) {
                             // Get string of selected item.
                             int stringLength = SendMessage((HWND)lParam, LB_GETTEXTLEN, selectedId, 0);
                             char holderString[stringLength];
                             SendMessage((HWND)lParam, LB_GETTEXT, selectedId, (LPARAM)holderString);
-                            printf("holderString: %s\n", holderString);
+                            //printf("holderString: %s\n", holderString);
                             SetDlgItemText(hwnd, ID_TEXT_PROJECT, holderString);  // This is how to set text to a control.
                         } else {
                             printf("ERROR:8982 (this is just a random number)\n");
@@ -216,16 +216,22 @@ void BuildProgram(void) {
 
 // This function will build the program.
 void CreateNewProject(HINSTANCE hInstance, HWND hwnd) {
-    printf("\topen-create-proj.\n");
+    printf("\topen create-proj.\n");
     int ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_CREATE_PROJECT), hwnd, CreateProjectDlgProc);  // 'pop-up' the new window.
-    printf("\tclose-create-proj\n");
+    printf("\tclose create-proj\n");
     if(ret == -1)
         MessageBox(hwnd, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
 }
 
 // hwnd == hWindow;
-void EditProject(HWND hwnd) {
-    printf("Error: EditProject not yet implemented.\n");
+void EditProject(HINSTANCE hInstance, HWND hwnd) {
+    FillDialog();  // Tell the popup to have filled input sections.
+    printf("\topen edit-proj.\n");
+    int ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_CREATE_PROJECT), hwnd, CreateProjectDlgProc);  // 'pop-up' the new window.
+    printf("\tclose edit-proj\n");
+    if(ret == -1)
+        MessageBox(hwnd, "Dialog failed!", "Error", MB_OK | MB_ICONINFORMATION);
+
 }
 
 // hwnd == hWindow;
@@ -233,13 +239,12 @@ void DeleteProject(HWND hwnd) {
     // Get the listbox handle.
     HWND hListBoxProject = GetDlgItem(hwnd, ID_LB_PROJECT);
     DWORD selectedId = SendMessage(hListBoxProject, LB_GETCURSEL, 0, 0);  // Get id of selected item.
-    printf("ID: %i\n", selectedId);
+    //printf("ID: %i\n", selectedId);
     if (selectedId != LB_ERR) {
-        printf("NO00000000!\n");
         // Retrieve file as string.
         char* fileString = NULL;
         if ( getFileString(g_configFileName, fileString) == 1 ) {
-            printf("ERROR with file Initialization.\n");
+            printf("ERROR with file initialization.\n");
         } else {
             char key[] = "projects";  char value[] = "";
             fileString = WriteRow(fileString, key, selectedId, value);  // Write an empty row.
@@ -250,15 +255,14 @@ void DeleteProject(HWND hwnd) {
             ItemContents_t results = ReadItem(fileString, key2, 0, 0);
             projectCount = atoi(results.itemString);  // Get the integer value.
             DealocateItemContents(results);  // Dealocate the read item.
+
             projectCount--;  // MAKE projectCount GO DOWN 1 EACH TIME A NEW ROW IS REMOVED.
-            printf("ALIVE\n");
+
             int value2Length = strlen("\002\003") + N_DIGITS(projectCount)+1;
             char value2[value2Length];
-            printf("ALIVE2\n");
             sprintf(value2, "\002\003%i", projectCount);
-            printf("ALIVE3\n");
             fileString = WriteRow(fileString, key2, 0, value2);  // Update projectCount
-            printf("ALIVE4\n");
+
             // Open Write filestring to file.
             FILE *fptr = fopen(g_configFileName, "w");
             fprintf(fptr, fileString);
