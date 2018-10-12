@@ -183,10 +183,10 @@ void ProcessInput(HWND hwnd, char* title, char* path, char* desc, char* appendCo
             HWND hListBoxProject = GetDlgItem(GetParent(hwnd), ID_LB_PROJECT);
             DWORD selectedId = SendMessage(hListBoxProject, LB_GETCURSEL, 0, 0);  // Get id of selected item.
             //printf("edit: process: ID: %i\n", selectedId);
-            printf("value: %s\n", value);
-            printf("CHECK!!!_\n");
+            //printf("value: %s\n", value);
+            //printf("CHECK!!!_\n");
             fileString = WriteRow(fileString, key, selectedId, value);  // Overwrite the selected row in the config file.
-            printf("After\n");
+            //printf("After\n");
 
             // change the title of the listbox.
             SendMessage(hListBoxProject, LB_DELETESTRING, selectedId, 0);
