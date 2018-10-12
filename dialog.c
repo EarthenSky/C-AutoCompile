@@ -46,6 +46,7 @@ BOOL CALLBACK CreateProjectDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
     {
         case WM_INITDIALOG: {
             if(fillDialog == true) {
+                printf("Alive!?\n");
                 // Get id of current selected listbox item.
                 HWND hListBoxProject = GetDlgItem(GetParent(hwnd), ID_LB_PROJECT);  // Get the listbox handle.
                 DWORD selectedId = SendMessage(hListBoxProject, LB_GETCURSEL, 0, 0);
@@ -57,6 +58,7 @@ BOOL CALLBACK CreateProjectDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
                         printf("ERROR with file Initialization.\n");
                     } else {
                         char key[] = "projects";
+                        printf("Alive!?\n");
                         ItemContents_t results = ReadItem(fileString, key, selectedId, -1);  // Read item at selectedId to results.
 
                         // This is setting text to the controls.
@@ -64,6 +66,7 @@ BOOL CALLBACK CreateProjectDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
                         SetDlgItemText(hwnd, DB_ID_EDIT_PATH, results.rowArray[1]);
                         SetDlgItemText(hwnd, DB_ID_EDIT_COMMENT, results.rowArray[2]);
                         SetDlgItemText(hwnd, DB_ID_EDIT_APPEND, results.rowArray[3]);
+                        printf("Alive!?\n");
 
                         //printf("results.rowArray[3]: %s\n", results.rowArray[3]);
 
@@ -108,7 +111,7 @@ BOOL CALLBACK CreateProjectDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
                     if (descLength == 1) { strcpy(descStr, " "); }  // case: nothing is in comments, fill with space.
                     if (appendLength == 1) { strcpy(appendStr, " "); }  // case: nothing is in comments, fill with space.
-                    
+
                     // Make sure that user input is acceptable.
                     if( VerifyInput(titleStr, pathStr) == TRUE ) {
                         ProcessInput(hwnd, titleStr, pathStr, descStr, appendStr);  // Write the project information to the data file. (In plaintext.)
@@ -180,8 +183,10 @@ void ProcessInput(HWND hwnd, char* title, char* path, char* desc, char* appendCo
             HWND hListBoxProject = GetDlgItem(GetParent(hwnd), ID_LB_PROJECT);
             DWORD selectedId = SendMessage(hListBoxProject, LB_GETCURSEL, 0, 0);  // Get id of selected item.
             //printf("edit: process: ID: %i\n", selectedId);
-
+            printf("value: %s\n", value);
+            printf("CHECK!!!_\n");
             fileString = WriteRow(fileString, key, selectedId, value);  // Overwrite the selected row in the config file.
+            printf("After\n");
 
             // change the title of the listbox.
             SendMessage(hListBoxProject, LB_DELETESTRING, selectedId, 0);

@@ -132,12 +132,9 @@ void InitLBProjects(void) {
         // Get how many projects there are.
         int projectCount = 0;
         char key[] = "projectCount";
-        printf("ALive1\n");
-        printf("fileStringOUT: %s\n\n", fileString);
+        printf("fileStringOUT: %s\n\n", fileString);  //THE end character thing is part of this string.
         ItemContents_t results = ReadItem(fileString, key, 0, 0);
-        printf("ALive3\n");
         projectCount = atoi(results.itemString);  // Get the integer value.
-        printf("ALive4\n");
         DealocateItemContents(results);  // Dealocate the read item.
         printf("PROJECT_COUNT : %i\n", projectCount);
 

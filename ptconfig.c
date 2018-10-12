@@ -20,7 +20,7 @@ void chopN(char *str, size_t n) {
 // This function inserts from into to and puts them at position.
 // The string must be freed after use. "free(str)"
 char* insertString(char* to, char* from, int position) {
-    char* outString = (char*)malloc( (strlen(to)+strlen(from)+2)*sizeof(char) );
+    char* outString = (char*)malloc( (strlen(to)+strlen(from))*sizeof(char) );
 
     strncpy(outString, to, position);
     outString[position] = '\0';
@@ -32,7 +32,7 @@ char* insertString(char* to, char* from, int position) {
 
 // This function reads the entire contents of the file String
 // and returns ptr to string.
-int getFileString(const char* fileName, char* &fileStringOut) {
+int getFileString(const char* fileName, char* &fileStringOut) {  //TODO: fix this function.  (it has a weird end piece sometimes that breaks things.)
     FILE *fptr = fopen(fileName, "r");  // open file for reading.
 
     if (fptr == NULL) { return 1; }
@@ -40,20 +40,24 @@ int getFileString(const char* fileName, char* &fileStringOut) {
     // Seek to end of file and find length of file.
     int fileStringSize = 0;
     fseek(fptr, 0L, SEEK_END);
-    fileStringSize = ftell(fptr)+1;  // the +1 is for the \0 at EOS.
+    fileStringSize = ftell(fptr);
     rewind(fptr);  // Go back to beginning.
 
-    // Fill string with file contents.
     char fileContents[fileStringSize];
-    //fileContents[fileStringSize-1] = '\0';
+    fileContents[fileStringSize] = '\0';
 
+    // Fill string with file contents.
     int index = 0;
     char currentChar = fgetc(fptr);
 	while (currentChar != EOF) {
+        //printf("FILE LEN: %i, %i\n", strlen(fileContents), index);
 	    fileContents[index] = currentChar;  // Assign the char to the string.
-		currentChar = fgetc(fptr);
+        //printf("\tchar: %c\n", currentChar);
+        currentChar = fgetc(fptr);
         index++;
 	}
+    printf("FILE CONT: %s\n", fileContents);
+
 
     fclose(fptr);  // Close file.
 
@@ -61,7 +65,7 @@ int getFileString(const char* fileName, char* &fileStringOut) {
     if (fileStringOut == NULL) { return 1; }
 
     strcpy(fileStringOut, fileContents);
-    printf("fileStringOut: %s\n", fileStringOut);
+    //printf("fileStringOut: %s\n", fileStringOut);
     return 0;  // All good!
 }
 
@@ -105,6 +109,7 @@ int str_cut(char *str, int begin, int len) {
 /// This function returns the value of an array at a specific table.
 /// If itemIndex = -1 then ItemContents (return value) == array of entire row (string data (doesn't the string header value.)  Type is lost.)
 ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int itemIndex) {
+    printf("START\n");
     //printf("fileStringIn: %s\n\n\n", fileStringIn);
     ItemContents_t results;
 
@@ -150,7 +155,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         // Remove first char from file string.
         chopN(fileString, 1); //insertPosition += 1;
 
-        printf("Found: %i\n", strcmp(ptrStr, title));
+        //printf("Found: %i\n", strcmp(ptrStr, title));
         if (strcmp(ptrStr, title) == 0) {  // Case: found correct title name.
             chopN(fileString, strlen(title)); //insertPosition += strlen(title);
             // WARNING: this GOTO statement jumps to just after the while loop.
@@ -159,7 +164,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
 
         strcpy(tmpFileString, fileString);
 
-        printf("Does multi_tok()\n");
+        //printf("Does multi_tok()\n");
         // Search for "\001\001" and count amount to cutoff from fileString when found.
         ptrStr = multi_tok(tmpFileString, "\001\001");
         if (ptrStr == NULL) { return results; }  // Exit Condition.
@@ -169,7 +174,6 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         chopN(fileString, frontCutoffLength); //insertPosition += frontCutoffLength;
     }
     ExitTitleWhile:
-    printf("ALive3c\n");
 
     // Look for subtitle string.
     if (subtitle != NULL) {
@@ -217,7 +221,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
     //printf("rowContents: %s\n", ptrStr);
-
+    printf("END\n");
     // Add needed information to type.
     if(itemIndex == -1) {
         results.contentIdentifier = 'a';
@@ -287,7 +291,7 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
             }
             else {*/
                 chopN(rowContentsCpy, strlen(tmpStr)+1);
-                printf("\t\ttmpStr: %s\n", tmpStr);
+                //printf("\t\ttmpStr: %s\n", tmpStr);
                 strcpy(results.rowArray[index], tmpStr);
             //}
 
@@ -321,26 +325,26 @@ ItemContents_t ReadItem(char* fileStringIn, char* keyString, int rowIndex, int i
         }
     }
     printf("Oh no, things are not looking good for you. \nExecution should not reach here, unless there is a weird error.\n");
-    return results;  //
+    return results;
 }
 
 /// This function removes the selected row and inserts rowString in it's place.
 /// rowString is a string that contains the entire row.
 char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowString) {
     // Create filestring copy, so that fileStringIn isn't modifed.
-    char fileString[strlen(fileStringIn)+1];
-    strcpy(fileString, fileStringIn);
+    char fileString[strlen(fileStringIn)];
+    strcpy(fileString, fileStringIn);  fileString[strlen(fileStringIn)] = '\0';
 
     int insertPosition = 0;  // Where to insert the row init string.
     int removeLength = 0;  // How much string to cut off.
 
-    char cleanFileString[strlen(fileString)+1];  // Create filestring "clean" copy. An unchanged version of the input file string.
-    strcpy(cleanFileString, fileString);
+    char cleanFileString[strlen(fileString)];  // Create filestring "clean" copy. An unchanged version of the input file string.
+    strcpy(cleanFileString, fileString);  cleanFileString[strlen(fileString)] = '\0';
 
-    char tmpFileString[strlen(fileString)+1];  // Create filestring copy.
+    char tmpFileString[strlen(fileString)];  // Create filestring copy.
 
-    char keyStringCopy[strlen(keyString)+1];  // A copy of keystring, so keystring isn't modified.
-    strcpy(keyStringCopy, keyString);
+    char keyStringCopy[strlen(keyString)];  // A copy of keystring, so keystring isn't modified.
+    strcpy(keyStringCopy, keyString);  keyStringCopy[strlen(keyString)] = '\0';
 
     char* title = NULL;  // This is the key.
     char* subtitle = NULL;  // This is also the key. \000 is null?
@@ -441,8 +445,8 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
 
     char rowContents[strlen(ptrStr)+1];
     strcpy(rowContents, ptrStr);
-    printf("rowContents!!!: %s\n", ptrStr);
-    printf("rowContents!!!: %s\n", ptrStr);
+    //printf("rowContents!!!: %s\n", ptrStr);
+    //printf("rowContents!!!: %s\n", ptrStr);
 
     // Remove row.  Modify the clean string (only neccisary changes for output.)
     str_cut(cleanFileString, insertPosition, strlen(rowContents)+1);
@@ -451,6 +455,7 @@ char* WriteRow(char* fileStringIn, char* keyString, int rowIndex, char* rowStrin
     // Insert row.
     char* outFileStringPtr;
     outFileStringPtr = insertString(cleanFileString, rowString, insertPosition);
+    outFileStringPtr[strlen(cleanFileString) + strlen(rowString)] = '\0';
     //printf("\toutFileStringPtr : %s\n", outFileStringPtr);
 
     // Dealocate pointers.
@@ -552,18 +557,18 @@ int FormatConfig(char* formatString) {
 /// rowInitString is the string that is written in the row (remember to include \003 and \004 for item separation).
 char* ConfigAddRow(char* fileStringIn, char* keyString, char* rowInitString) {
     // Create filestring copy, so that fileStringIn isn't modifed.
-    char fileString[strlen(fileStringIn)+1];
-    strcpy(fileString, fileStringIn);
+    char fileString[strlen(fileStringIn)];
+    strcpy(fileString, fileStringIn);  fileString[strlen(fileStringIn)] = '\0';
 
     int insertPosition = 0;  // Where to insert the row init string.
 
-    char cleanFileString[strlen(fileString)+1];  // Create filestring "clean" copy. An unchanged version of the input file string.
-    strcpy(cleanFileString, fileString);
+    char cleanFileString[strlen(fileString)];  // Create filestring "clean" copy. An unchanged version of the input file string.
+    strcpy(cleanFileString, fileString);  cleanFileString[strlen(fileString)] = '\0';
 
-    char tmpFileString[strlen(fileString)+1];  // Create filestring copy.
+    char tmpFileString[strlen(fileString)];  // Create filestring copy.
 
-    char keyStringCopy[strlen(keyString)+1];  // A copy of keystring, so keystring isn't modified.
-    strcpy(keyStringCopy, keyString);
+    char keyStringCopy[strlen(keyString)];  // A copy of keystring, so keystring isn't modified.
+    strcpy(keyStringCopy, keyString);  keyStringCopy[strlen(keyString)] = '\0';
 
     char* title = NULL;  // This is the key.
     char* subtitle = NULL;  // This is also the key. \000 is null?
@@ -653,6 +658,7 @@ char* ConfigAddRow(char* fileStringIn, char* keyString, char* rowInitString) {
     // Write Message to fileString.
     char* outFileStringPtr;
     outFileStringPtr = insertString(cleanFileString, rowInitString, insertPosition);
+    outFileStringPtr[strlen(cleanFileString) + strlen(rowInitString)] = '\0';
 
     // Dealocate pointers.
     free(title);
