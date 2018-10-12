@@ -1,5 +1,7 @@
 # C-AutoCompile
 
+I made this program to learn the win32 api and C; it is currently **incomplete** and unneeded.
+
 This program automatically generates and runs build commands for a program, as long as all source files are in the same folder.
 This program also generates a build comments file that depicts the user inputted comment for each build.
 
